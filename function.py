@@ -46,6 +46,6 @@ def notify_to_line(users):
                            + 'https://www.dtmi/program/' + program['ProgramId'] + '\n'
 
             if message:
-                message = '「' + search_word + message + '」の番組'
+                message = '「' + search_word + '」の番組' + message
                 requests.post(url, data={"message" :  message}, headers=headers)
 
