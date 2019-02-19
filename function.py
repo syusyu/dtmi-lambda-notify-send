@@ -26,7 +26,6 @@ def fetch_user(dynamodb):
     while 'LastEvaluatedKey' in response:
         response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
         data.extend(response['Items'])
-    print(data)
     return data
 
 
@@ -38,14 +37,15 @@ def notify_to_line(users):
         url = "https://notify-api.line.me/api/notify"
         headers = {"Authorization" : "Bearer "+ user['NotifyToken']}
 
-        message = '\n'
-        for program in user['Programs']:
-            if 'Notify' not in program or not bool(program['Notify']):
-                continue
-            message += program['Date'] + '\n' + program['Title'] + '\n' + program['Contents'] + '\n' \
-                       + program['SearchWord'] + 'Not notify: https://www.dtmi/not-notify/' + program['ProgramId'] + '\n\n'
+        for search_word, programs in user['Programs'].items():
+            message = ''
+            for program in programs:
+                if 'Notify' not in program or not bool(program['Notify']):
+                    continue
+                message += '\n' + program['Date'] + '\n' + program['Station'] + '\n' + program['Title'] + '\n' \
+                           + 'https://www.dtmi/program/' + program['ProgramId'] + '\n'
 
-        print(message)
-
-        res = requests.post(url, data={"message" :  message}, headers=headers)
+            if message:
+                message = '「' + search_word + message + '」の番組'
+                requests.post(url, data={"message" :  message}, headers=headers)
 
